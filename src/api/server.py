@@ -3,6 +3,7 @@ FastAPI server for the BCP Calculator API.
 """
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, Any
 import logging
 import os
@@ -20,6 +21,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for local development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
 def read_root():
@@ -29,6 +39,12 @@ def read_root():
         "version": "1.0.0",
         "description": "API for calculating Business Complexity Points (BCP) of user stories"
     }
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy", "service": "BCP Calculator API"}
 
 
 @app.post("/calculate", response_model=Dict[str, str])

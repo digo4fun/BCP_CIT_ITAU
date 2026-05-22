@@ -152,13 +152,14 @@ async function calculateBCP(storyContent) {
     const url = `${state.apiUrl}/calculate`;
     
     try {
+        // Iniciar o job
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                story_content: storyContent,
+                content: storyContent,
                 provider: 'claude'
             })
         });
@@ -171,14 +172,49 @@ async function calculateBCP(storyContent) {
             throw new Error(errorData.detail || `Erro na API: ${response.status}`);
         }
 
-        const data = await response.json();
-        return data;
+        const jobData = await response.json();
+        const jobId = jobData.job_id;
+        
+        // Polling para verificar o status do job
+        return await pollJobStatus(jobId);
+        
     } catch (error) {
         if (error.message.includes('Failed to fetch')) {
             throw new Error('Não foi possível conectar à API. Verifique se o servidor está rodando:\n\npython3 run_api_server.py');
         }
         throw error;
     }
+}
+
+// Polling para verificar status do job
+async function pollJobStatus(jobId, maxAttempts = 60, interval = 2000) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            const response = await fetch(`${state.apiUrl}/status/${jobId}`);
+            
+            if (!response.ok) {
+                throw new Error(`Erro ao verificar status: ${response.status}`);
+            }
+            
+            const status = await response.json();
+            
+            if (status.status === 'completed') {
+                return status.result;
+            } else if (status.status === 'failed') {
+                throw new Error(status.error || 'Erro ao processar a história');
+            }
+            
+            // Aguardar antes de tentar novamente
+            await new Promise(resolve => setTimeout(resolve, interval));
+            
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+        }
+    }
+    
+    throw new Error('Timeout: A análise está demorando muito. Tente novamente.');
 }
 
 // Mostrar loading
