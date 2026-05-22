@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCP Calculator - Calculadora de Pontos de Complexidade</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 BCP Calculator</h1>
+            <p class="subtitle">Calculadora de Pontos de Complexidade de Negócio</p>
+        </header>
+
+        <main>
+            <!-- Seção de Input -->
+            <section class="input-section">
+                <h2>📝 História de Usuário</h2>
+                <div class="form-group">
+                    <label for="storyInput">Cole ou digite sua história de usuário:</label>
+                    <textarea 
+                        id="storyInput" 
+                        placeholder="# História: Nome da História
+
+## Descrição
+Como [usuário]
+Quero [funcionalidade]
+Para [benefício]
+
+## Critérios de Aceitação
+- Critério 1
+- Critério 2
+
+## Regras de Negócio
+- Regra 1
+- Regra 2"
+                        rows="15"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="apiUrl">URL da API (opcional):</label>
+                    <input 
+                        type="text" 
+                        id="apiUrl" 
+                        placeholder="http://localhost:8000"
+                        value="http://localhost:8000"
+                    >
+                    <small>Certifique-se de que o servidor API está rodando: <code>python3 run_api_server.py</code></small>
+                </div>
+
+                <div class="button-group">
+                    <button id="calculateBtn" class="btn btn-primary">
+                        <span class="btn-icon">🚀</span>
+                        Calcular BCP
+                    </button>
+                    <button id="loadExampleBtn" class="btn btn-secondary">
+                        <span class="btn-icon">📄</span>
+                        Carregar Exemplo
+                    </button>
+                    <button id="clearBtn" class="btn btn-secondary">
+                        <span class="btn-icon">🗑️</span>
+                        Limpar
+                    </button>
+                </div>
+            </section>
+
+            <!-- Seção de Loading -->
+            <section id="loadingSection" class="loading-section" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analisando história de usuário...</p>
+                <small>Isso pode levar alguns segundos</small>
+            </section>
+
+            <!-- Seção de Resultados -->
+            <section id="resultsSection" class="results-section" style="display: none;">
+                <h2>📊 Resultados da Análise</h2>
+                
+                <!-- Card de BCP Total -->
+                <div class="bcp-total-card">
+                    <div class="bcp-total-label">Total BCP</div>
+                    <div id="bcpTotal" class="bcp-total-value">0</div>
+                    <div class="bcp-total-subtitle">Pontos de Complexidade</div>
+                </div>
+
+                <!-- Cards de Componentes -->
+                <div class="components-grid">
+                    <div class="component-card">
+                        <div class="component-icon">📋</div>
+                        <div class="component-label">Regras de Negócio</div>
+                        <div id="businessRules" class="component-value">0</div>
+                    </div>
+                    <div class="component-card">
+                        <div class="component-icon">🎨</div>
+                        <div class="component-label">Elementos de UI</div>
+                        <div id="uiElements" class="component-value">0</div>
+                    </div>
+                    <div class="component-card">
+                        <div class="component-icon">🔌</div>
+                        <div class="component-label">Integrações Externas</div>
+                        <div id="externalIntegrations" class="component-value">0</div>
+                    </div>
+                </div>
+
+                <!-- Análise de Maturidade -->
+                <div class="maturity-section">
+                    <h3>📈 Análise de Maturidade</h3>
+                    <div class="maturity-grid">
+                        <div class="maturity-card">
+                            <h4>Maturidade da História</h4>
+                            <div class="maturity-score">
+                                <span id="maturityScore" class="score-value">0</span>
+                                <span class="score-max">/5</span>
+                            </div>
+                            <div id="maturityClassification" class="classification">-</div>
+                            <p id="maturityAssessment" class="assessment">-</p>
+                        </div>
+                        <div class="maturity-card">
+                            <h4>Critérios INVEST</h4>
+                            <div class="maturity-score">
+                                <span id="investScore" class="score-value">0</span>
+                                <span class="score-max">/5</span>
+                            </div>
+                            <div id="investClassification" class="classification">-</div>
+                            <p id="investAssessment" class="assessment">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalhes Completos -->
+                <div class="details-section">
+                    <h3>🔍 Detalhes Completos</h3>
+                    <button id="toggleDetailsBtn" class="btn btn-secondary">
+                        <span class="btn-icon">👁️</span>
+                        Mostrar JSON Completo
+                    </button>
+                    <pre id="jsonDetails" class="json-details" style="display: none;"></pre>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="button-group">
+                    <button id="exportJsonBtn" class="btn btn-secondary">
+                        <span class="btn-icon">💾</span>
+                        Exportar JSON
+                    </button>
+                    <button id="newAnalysisBtn" class="btn btn-primary">
+                        <span class="btn-icon">🔄</span>
+                        Nova Análise
+                    </button>
+                </div>
+            </section>
+
+            <!-- Seção de Erro -->
+            <section id="errorSection" class="error-section" style="display: none;">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na Análise</h3>
+                <p id="errorMessage"></p>
+                <button id="retryBtn" class="btn btn-primary">
+                    <span class="btn-icon">🔄</span>
+                    Tentar Novamente
+                </button>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <p>BCP Calculator - Powered by Claude Sonnet 4</p>
+                <p class="footer-links">
+                    <a href="https://github.com/flow-ciandt/bcp-agent" target="_blank">GitHub</a> |
+                    <a href="#" id="helpLink">Ajuda</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal de Ajuda -->
+    <div id="helpModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>❓ Como Usar</h2>
+            <div class="help-content">
+                <h3>1. Inicie o Servidor API</h3>
+                <p>Antes de usar a interface web, inicie o servidor:</p>
+                <code>cd /Users/rodrigorondon/BCP_CIT_ITAU && python3 run_api_server.py</code>
+                
+                <h3>2. Escreva sua História</h3>
+                <p>Cole ou digite sua história de usuário no formato Markdown. Inclua:</p>
+                <ul>
+                    <li>Descrição clara (Como/Quero/Para)</li>
+                    <li>Critérios de aceitação</li>
+                    <li>Regras de negócio</li>
+                </ul>
+                
+                <h3>3. Calcule o BCP</h3>
+                <p>Clique em "Calcular BCP" e aguarde a análise.</p>
+                
+                <h3>4. Analise os Resultados</h3>
+                <p>Veja o total de pontos e a distribuição por componente.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
